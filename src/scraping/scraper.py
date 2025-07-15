@@ -1,11 +1,12 @@
 import os
 import json
 import logging
+import asyncio
 from datetime import datetime
 from telethon.tl.types import Message
 
 # --- Configuration ---
-CHANNELS = ['ChemedTelegramChannel', 'lobelia4cosmetics', 'tikvahpharma']
+CHANNELS = ['Thequorachannel', 'lobelia4cosmetics', 'tikvahpharma']
 DATA_LAKE_PATH = 'data/raw/telegram_messages'
 IMAGE_PATH = 'data/raw/images'
 
@@ -66,6 +67,10 @@ async def scrape_all_channels(client):
 
         except Exception as e:
             logging.error(f"Could not scrape channel '{channel_name}'. Reason: {e}")
-            continue
+            continue  # Move to the next channel if an error occurs
+
+        # Add a delay after successfully scraping a channel
+        logging.info(f"Finished scraping {channel_name}. Waiting for 15 seconds before next channel...")
+        await asyncio.sleep(15)
+
     logging.info("--- All channels scraped successfully ---")
-    

@@ -1,6 +1,22 @@
-.env
-venv/
+# Python
 __pycache__/
+*.pyc
 week7-venv/
-data/
+
+# Environment variables
+.env
+
+# Telegram session file
 anon.session
+
+# Raw data and images
+data/
+
+# dbt generated files
+dbt_project/target/
+dbt_project/dbt_packages/
+logs/
+
+# dbt user-specific files
+profiles.yml
+.user.yml

@@ -1,0 +1,13 @@
+# This file defines tests for our staging model.
+
+version: 2
+
+models:
+  - name: stg_telegram_messages
+    description: "Staged telegram messages data, cleaned and type-casted from raw JSON."
+    columns:
+      - name: message_id
+        description: "The unique identifier for a message."
+        tests:
+          - unique
+          - not_null

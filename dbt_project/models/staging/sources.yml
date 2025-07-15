@@ -1,0 +1,9 @@
+# This file defines the source table from our raw schema.
+
+version: 2
+
+sources:
+  - name: raw_telegram
+    schema: raw
+    tables:
+      - name: raw_messages
