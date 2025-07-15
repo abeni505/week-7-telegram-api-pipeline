@@ -8,6 +8,8 @@ services:
       - .:/app
     depends_on:
       - db
+    stdin_open: true # Keeps stdin open to allow for input
+    tty: true        # Allocates a pseudo-TTY
   db:
     image: postgres:13
     env_file:
