@@ -1,9 +1,11 @@
- # The main script now handles the client connection explicitly.
+# The main script is updated with simplified dbt commands.
+
 import os
 import asyncio
 from dotenv import load_dotenv
 from telethon import TelegramClient
 from scraping.scraper import scrape_all_channels
+from loading.loader import load_data_to_postgres
 
 # Load environment variables
 load_dotenv()
@@ -12,26 +14,46 @@ API_HASH = os.getenv("TELEGRAM_API_HASH")
 
 async def main():
     """
-    Main function to connect the client and run the pipeline steps.
+    Main function to run the full data pipeline.
     """
     print("🚀 Starting the data pipeline...")
 
-    # The client is now created and connected here in main.
-    # This makes the login prompt the very first step.
+    # # --- Task 1: Data Scraping (Commented out for faster testing) ---
+
     client = TelegramClient('anon', API_ID, API_HASH)
-    
     async with client:
         me = await client.get_me()
-        print(f"✅ Successfully logged in as: {me.first_name}")
-
-        # --- Task 1: Data Scraping ---
+        print(f"✅ Logged in as: {me.first_name}")
         print("--- Running Task 1: Data Scraping and Collection ---")
-        await scrape_all_channels(client) # Pass the connected client to the scraper
+        await scrape_all_channels(client)
         print("✅ Task 1 complete.")
 
+
+    # --- Task 2: Load to Warehouse & Transform ---
+    print("--- Running Task 2: Data Modeling and Transformation ---")
+    
+    # Step 1: Load raw data from data lake to PostgreSQL
+    print("Loading raw data into PostgreSQL...")
+    load_data_to_postgres()
+    print("✅ Raw data loaded.")
+
+    # Step 2: Run dbt to transform the data
+    print("Running dbt transformations...")
+    # The --profiles-dir flag is no longer needed
+    dbt_command = "dbt run --project-dir ./dbt_project"
+    os.system(dbt_command)
+    print("✅ dbt transformations complete.")
+
+    # Step 3: Run dbt tests
+    print("Running dbt tests...")
+    dbt_test_command = "dbt test --project-dir ./dbt_project"
+    os.system(dbt_test_command)
+    print("✅ dbt tests complete.")
+
+    print("✅ Task 2 complete.")
+
+
 if __name__ == "__main__":
-    # The main entry point for the application.
-    # This structure now forces the login prompt before anything else.
     try:
         asyncio.run(main())
     except Exception as e:
