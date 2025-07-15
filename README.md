@@ -4,6 +4,7 @@ This project is an end-to-end data pipeline that extracts data from public Teleg
 
 ## Table of Contents
 - [Overview](#overview)
+- [How It Works](#how-it-works)
 - [Task Accomplished](#task-acomplished)
 - [Prerequisites](#prerequisites)
 - [Project Setup](#project-setup)
@@ -18,6 +19,15 @@ The primary goal is to build a robust data platform to generate insights about E
 - **Transform**: Uses dbt to clean, test, and model the raw data into a star schema.
 - **Enrich**: Uses YOLOv8 to detect objects in images.
 - **Serve**: Exposes cleaned data via a FastAPI.
+
+## How It Works
+
+The pipeline is orchestrated by the `src/main.py` script and runs in the following sequence:
+
+1.  **Data Scraping**: The `scraper.py` script connects to the Telegram API and downloads messages and images from the specified channels, saving them to the `data/raw/` directory.
+2.  **Data Loading**: The `loader.py` script reads the raw JSON files from the data lake, truncates the target table to prevent duplicates, and loads the data into the `raw.raw_messages` table in PostgreSQL.
+3.  **Data Transformation**: The script then executes `dbt run`, which transforms the raw data into a clean, structured star schema.
+4.  **Data Testing**: Finally, `dbt test` is executed to run all data quality tests on the final models, ensuring integrity and reliability.
 
 ## Task Acomplished
 
@@ -48,28 +58,55 @@ The primary goal is to build a robust data platform to generate insights about E
 
 ## Project Setup
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/abeni505/week-7-telegram-api-pipeline.git
-    cd week-7-telegram-api-pipeline
-    ```
 
-2.  **Create the environment file**:
-    Create a `.env` file in the project root and add the following variables:
-    ```
-    # .env
-    TELEGRAM_API_ID=your_api_id
-    TELEGRAM_API_HASH=your_api_hash
-    POSTGRES_USER=myadmin
-    POSTGRES_PASSWORD=mysecretpassword
-    POSTGRES_DB=mydatabase
-    ```
-    *Replace the values with your actual credentials.*
+Follow these steps to set up and run the project locally.
 
-3.  **Build and run the Docker containers**:
-    ```bash
-    docker-compose up --build
-    ```
+#### Step 1: Clone the Repository
+```bash
+git clone https://github.com/abeni505/week-7-telegram-api-pipeline.git 
+cd week-7-telegram-api-pipeline
+```
+#### Step 2: Configure Environment Variables
+
+
+Create a `.env` file in the project root and add the following variables:
+```bash
+# .env
+TELEGRAM_API_ID=your_api_id
+TELEGRAM_API_HASH=your_api_hash
+POSTGRES_USER=myadmin
+POSTGRES_PASSWORD=mysecretpassword
+POSTGRES_DB=mydatabase
+
+*Replace the values with your actual credentials.*
+```
+
+
+#### Step 3:  Build and run the Docker containers:
+
+This command builds the application image, installing all dependencies from `requirements.txt`.
+
+
+```bash
+docker-compose up --build
+```
+
+#### Step 4: One-Time Telegram Login
+
+You must log in to Telegram once to create a session file.
+
+```bash
+docker-compose run --rm app python src/login.py
+```
+Follow the prompts to enter your phone number and the code you receive from Telegram.
+
+#### Step 5: Install dbt Packages
+This command installs the necessary dbt packages, like `dbt_utils`.
+
+```bash
+docker-compose run --rm app dbt deps --project-dir ./dbt_project
+```
+
 
 ## Running the Application
 
