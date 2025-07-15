@@ -2,3 +2,5 @@
 venv/
 __pycache__/
 week7-venv/
+data/
+anon.session
