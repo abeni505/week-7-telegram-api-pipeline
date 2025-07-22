@@ -12,6 +12,13 @@ COPY requirements.txt .
 # Install the dependencies from the requirements.txt file
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Set up dbt profile 
+# Create the default dbt directory
+RUN mkdir -p /root/.dbt
+# Copy the profiles.yml file into the default dbt directory
+COPY profiles.yml /root/.dbt/profiles.yml
+
+
 # Copy your application's code into the container
 COPY . .
 
