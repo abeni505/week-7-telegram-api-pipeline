@@ -1,32 +1,54 @@
-# This file is updated with a healthcheck to prevent race conditions.
+version: '3.8'
+
 services:
-  app:
-    build: .
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-    depends_on:
-      db:
-        condition: service_healthy # Wait for the db to be healthy
-    stdin_open: true 
-    tty: true        
+  # This is your existing database service
   db:
     image: postgres:13
-    env_file:
-      - .env
+    container_name: week-7-telegram-api-pipeline-db-1
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # This is your existing Python application service (for the API)
+  app:
+    build: .
+    container_name: week-7-telegram-api-pipeline-app-1
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+
+  # --- Service for dbt ---
+  dbt:
+    build: . # It uses the same Dockerfile as the app
+    container_name: week-7-telegram-api-pipeline-dbt-1
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - .:/app # Mounts your entire project directory into the container
+    working_dir: /app/dbt_project # Sets the default directory to your dbt project
+    # --- FIX: Add an explicit entrypoint for the dbt service ---
+    # This tells the container that the command to execute is 'dbt',
+    # and any arguments from the command line (like 'run') will be passed to it.
+    entrypoint: ["dbt"]
+
 volumes:
   postgres_data:

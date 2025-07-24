@@ -13,7 +13,7 @@ macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
 target-path: "target"  # directory which will store compiled SQL files
-clean-targets:         # directories to be removed by `dbt clean`
+clean-targets:        # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
@@ -24,6 +24,8 @@ models:
   telegram_analytics:
     # Configures models under the marts/ folder
     marts:
+      # --- FIX: Add this line to build models in the 'marts' schema ---
+      +schema: marts
       +materialized: table # Marts will be created as tables
     # Configures models under the staging/ folder
     staging:

@@ -7,3 +7,12 @@ sources:
     schema: raw
     tables:
       - name: raw_messages
+  
+  - name: raw_data  # This name matches the first part of source() in your model
+    schema: raw_data # The schema where you load the image detection JSON files
+    tables:
+      - name: image_detections # The name of the raw table for detections
+        description: "Raw JSON results from YOLOv8 object detection."
+        columns:
+          - name: data
+            description: "A single JSONB column containing the detection results."
